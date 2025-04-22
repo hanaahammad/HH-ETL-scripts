@@ -43,19 +43,15 @@ def get_workbook_version(df):
 def persist_df(df):
     st.write("persisting ... ")
     username = 'hanaashammad'
-
-    username = urllib.parse.quote_plus('hanaashammad')
-    password = urllib.parse.quote_plus('lala@2000')
-    #cluster = 'lala@2000'
+    u_name = ''
+    pswd = ''
+    username = urllib.parse.quote_plus(u_name)
+    password = urllib.parse.quote_plus(pswd)
     uri =  "mongodb+srv://" +username+':'+password+ '@etlcluster.regns8u.mongodb.net' #[/[database][?options]]
     st.write(uri)
-    #client = MongoClient('mongodb://%s:%s@etlcluster.regns8u.mongodb.net/' % (username, password))
     client=MongoClient(uri)
     st.write(client)
-    #uri="mongodb+srv:" //hanaashammad:<db_password>@etlcluster.regns8u.mongodb.net/
-    #uri = "mongodb+srv://hanaashammad:lala@2000@etlcluster.regns8u.mongodb.net/?retryWrites=true&w=majority&appName=etlcluster"
-    # Create a new client and connect to the server
-    #client = MongoClient(mongo_uri, server_api=ServerApi('1'))
+   
     st.write(client)
     # Send a ping to confirm a successful connection
     
