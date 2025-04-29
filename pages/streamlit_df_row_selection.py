@@ -32,6 +32,7 @@ selection = dataframe_with_selections(df)
 st.write("Your selection:")
 st.write(selection)
 
+
 st.header('filtering options')
 
 #df=pd.DataFrame({"Par":["Apple","Strawberry","Banana"],"Cat1":["good","good","bad"],"Cat2":["healthy","healthy","unhealthy"]})
