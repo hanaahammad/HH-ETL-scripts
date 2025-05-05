@@ -3,6 +3,7 @@ import openpyxl
 import pandas as pd
 import util.script_generator as sg
 import util.df_utlis as dfutils
+import util.connect_to_cs as cs
 
 st.title("View the workbook")
 
@@ -15,15 +16,46 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Initialize session state
+if 'sql_cmd' not in st.session_state:
+    st.session_state.sql_cmd = ''
+if 'sheet' not in st.session_state:
+    st.session_state.sheet=''
+
+
+
+def execute_sql(sql_script):
+    print(sql_script)
+    st.write(sql_script)
+    response = cs.create_core_tables(sql_script)
+    return response
+
+
 def group_by_table(df):
     d= dict(df.groupby('Table Name').apply(list))
     st.write(d)
     return d
 
-def create_script(df):
+def create_script(df,sheet):
+    returned_script=''
+    match sheet:
+        case "CORE tables" :
+            st.write(f"{sheet} in process.")  # Match weekends
+            returned_script = sg.core_tables_script(df)
+        case "System":
+            st.write(f"{sheet} in process.")  # Match sheet
+            returned_script = sg.process_system_tab(df)
+        case "Stream":
+            st.write(f"{sheet} in process.")  
+            returned_script = sg.process_stream_tab(df)
+        case "STG Tables":
+            st.write(f"{sheet} in process.")  # Match sheet
+            st.write(df.columns)
+        case _:
+            st.write("Thatis default.")  # Default case
+
     #print(df)
-    returned_script = sg.core_tables_script(df)
-    st.write(returned_script)
+    st.write(returned_script)   
     return returned_script
 
 
@@ -111,6 +143,8 @@ if data_file2:
 
     st.markdown(f"### Currently Selected: `{sheet_selector2}`")
     st.write(df2)
+    st.session_state.sheet=sheet_selector2
+    print(st.session_state.sheet)
     my_comment = '''
     event = st.dataframe(
         df2,
@@ -121,6 +155,7 @@ if data_file2:
         )
         '''
     st.write("Select an item to convert to SQL:")
+
     if sheet_selector2 =='CORE tables':
         tables_df2 = dfutils.df_groupBy(df2, 'Table Name')
         #st.write(tables_df2)
@@ -133,7 +168,6 @@ if data_file2:
         displayed_selection =selection
 
     st.write("Your selection:")
-   
     st.write(displayed_selection)
 
     
@@ -142,10 +176,18 @@ if data_file2:
         check_difference(df, df2)
 
     if st.button('generate sql'):
-        rs = create_script(selection)
-        selection['sql_script']=rs
-        st.dataframe(selection,column_config={'Table Name': 'Table',
-                  'sql_script': 'SQL Script'}  , hide_index=True )
+        rs = create_script(selection, st.session_state.sheet)
+        st.session_state.sql_cmd = rs
+        #selection['sql_script']=rs
+        #st.dataframe(selection,column_config={'Table Name': 'Table',
+                  #'sql_script': 'SQL Script'}  , hide_index=True )
+    if st.button('execute sql'):
+        rs= st.session_state.sql_cmd 
+        print('-------------------------------------------------', type(rs))
+        st.write(st.session_state.sql_cmd )
+        r=execute_sql(rs)
+        st.write(r)
+        
      
    
 

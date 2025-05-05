@@ -3,6 +3,9 @@ import pandas as pd
 import plotly.express as px
 import numpy as np
 
+import random
+from faker import Faker
+
 # Create dummy data
 def create_dummy_data():
     np.random.seed(0)
@@ -51,3 +54,15 @@ if st.session_state.show_plot:
     fig = px.line(st.session_state.df, x='Date', y=['Sales', 'Customers'], 
                   title='Sales and Customers Over Time')
     st.plotly_chart(fig)
+
+st.title('trying switch case')
+# Take user input for the day of the week
+day =  st.text_input("Enter the day of the week: ")
+# Match the day to predefined patterns
+match day:
+    case "Saturday" | "Sunday":
+        st.write(f"{day} is a weekend.")  # Match weekends
+    case "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday":
+        st.write(f"{day} is a weekday.")  # Match weekdays
+    case _:
+        st.write("That's not a valid day of the week.")  # Default case

@@ -19,6 +19,7 @@ event = st.dataframe(
     selection_mode='single-row'
 )
 
+
 if len(event.selection['rows']):
     print(type(event))
     print(type(event.selection))

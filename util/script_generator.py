@@ -50,35 +50,66 @@ def read_tabs_contents(xl, tabs):
 
 def process_system_tab(sheet_content):
     print("============= process system tab ==============")
-    #print(type(sheet_content))
-    #print(sheet_content)
+   
     print(sheet_content.columns)
     '''
     (['Source System ID', 'Source System Name', 'Source System Alias',
        'Schema', 'Loading Type', 'Source Type']
-
-
-       EXEC GCFR_Register_System('1','/','CB','Core Banking');
-
-       '''
+    EXEC GCFR_Register_System('1','/','CB','Core Banking');
+    '''
     pref = "EXEC GCFR_Register_System( "
     sufx = ");"
-    new_sheet_content =  pd.DataFrame(sheet_content[:2])
+    #new_sheet_content =  pd.DataFrame(sheet_content[:2]) # this is here to avoid empty lines 
 
-    sys_cols = new_sheet_content.columns
+    sys_cols = sheet_content.columns
 
     generated_script = []
-    for indices, row in new_sheet_content.iterrows():
+    for indices, row in sheet_content.iterrows():
         print(type(row))
         a = cu.concat_4(row['Source System ID'], '/', row['Source System Alias'], row['Source System Name'])
         generated_script.append(pref+ a + sufx )
 
-    #print(new_sheet_content)
+    
     print(generated_script)
     return generated_script 
 
 
 def process_stream_tab(sheet_content):
+    print("============= process stream tab ==============")
+    #print(type(sheet_content))
+    #print(sheet_content)
+    print(sheet_content.columns)
+    '''
+    ['System Id', 'System Name', 'Stream Key', 'Stream Name',
+       'Loading Frequency']
+
+    CALL GCFR_UT_Register_Stream(1,1,'CB_STG','2025-04-13');
+
+       '''
+    pref = "CALL GCFR_UT_Register_Stream( "
+    sufx = ");"
+    # next line will be removed when working with the actual sheet 
+    new_sheet_content =  pd.DataFrame(sheet_content[:4])
+
+    
+
+    generated_script = []
+    for indices, row in new_sheet_content.iterrows():
+        print(type(row))
+        today = datetime.today().strftime('%Y-%m-%d')
+        print(str(row))
+        a= str(int(row['System Id'])) + ',' + str(int(row['Stream Key'])) + ','
+        print(a)
+        a =  a + cu.concat_2(row['Stream Name'], today )
+        generated_script.append(pref+ a + sufx )
+
+    #print(new_sheet_content)
+    print(generated_script)
+    for s in generated_script:
+        print(s)
+    return generated_script 
+
+def STG_tables(sheet_content):
     print("============= process stream tab ==============")
     #print(type(sheet_content))
     #print(sheet_content)
@@ -173,17 +204,10 @@ def core_tables_script(df):
     print(type(df))
     print(df.shape)
     print(df.columns)
-    DB_name='ETLDB'
+    DB_name='ETLTEST'
     print(DB_name)
     script_list = []
-    '''
-    
-         name = "Sam"
->>> age = 30
->>> f"Hello, {name}. You are {age}."
-'Hello, Sam. You are 30.'
-
-    '''
+   
     
 
     for index, row in df.iterrows():
@@ -211,20 +235,14 @@ def core_tables_script(df):
             f_string=f_string +' '+added_field
 
         print(f_string)  
-        f_string=f_string[:-1]+ ' ) UNIQUE PRIMARY INDEX('+ PARTY_ID+')' 
+        print('============================================== PARTY _ID', PARTY_ID)
+        #f_string=f_string[:-1]+ ' ) UNIQUE PRIMARY INDEX('+ PARTY_ID+')' 
+        f_string=f_string[:-1]+ ' ) UNIQUE PRIMARY INDEX(PARTY_ID)' 
+
         print(f_string)
         sql_string = sql_string+f_string
         script_list.append(sql_string)
-        '''
-        mand=''
-        if row['Mandatory']=='Y':
-            mand='NOT NULL'
-            sql_script =   f" CREATE MULTISET TABLE '+ \
-            tbl_name+ ' (' +\
-            row['Column Name']+' ' + row['Data Type'] + ' ' + mand+
-            
-
-        '''
+       
     """
     CREATE MULTISET TABLE GDEV1T_CORE.PRTY (
     PARTY_ID INTEGER NOT NULL, 
