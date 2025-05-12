@@ -48,10 +48,10 @@ def list_objects(database_name='ETLTEST'):
     return tables, query
 
 def create_core_tables(sql_script):
-    print('connect to clear scape : in create core tables =======================')
+    print('connect to clear scTD_DB_PASSWORDape : in create core tables =======================')
     print(sql_script)
     user_name = os.getenv("TD_DB_USER")
-    password = os.getenv("TD_DB_PASSWORD")
+    password = os.getenv("")
     host = os.getenv("TD_DB_HOST")
 
     query = sql_script

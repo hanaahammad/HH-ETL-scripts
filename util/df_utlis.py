@@ -25,8 +25,10 @@ def initalize_test_df():
 
 def df_groupBy(df, col) :
     print('------------------------ GROUP BY')
-    print(df.columns)
-    print(col)
+    print('BUT first lets check the passed Dataframe ')
+    print(df)
+    print(f' group by the df {df.columns}')
+    print(f' by the column {col}')
     #d = (df.groupby(['Table Name'])[['a','d']]
     '''
     d = (df.groupby([col])[df.columns]

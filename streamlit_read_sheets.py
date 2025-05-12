@@ -37,22 +37,27 @@ def group_by_table(df):
     return d
 
 def create_script(df,sheet):
+    
     returned_script=''
     match sheet:
-        case "CORE tables" :
-            st.write(f"{sheet} in process.")  # Match weekends
+        case "core tables" : # CORE tables :
+            st.write(f"{sheet} in process.")  # Match core tables
+            st.write(sheet, df)
             returned_script = sg.core_tables_script(df)
-        case "System":
+        case "system": #System".lower():
             st.write(f"{sheet} in process.")  # Match sheet
             returned_script = sg.process_system_tab(df)
-        case "Stream":
+        case "stream" : #Stream".lower():
             st.write(f"{sheet} in process.")  
             returned_script = sg.process_stream_tab(df)
-        case "STG Tables":
+        case "stg tables" :# STG tables".lower():
             st.write(f"{sheet} in process.")  # Match sheet
-            st.write(df.columns)
+            returned_script = sg.STG_tables(df)
+
+            
+
         case _:
-            st.write("Thatis default.")  # Default case
+            st.write("That is default.")  # Default case
 
     #print(df)
     st.write(returned_script)   
@@ -123,7 +128,9 @@ if data_file:
             '''
     
 data_file2 = st.sidebar.file_uploader("Upload the previous Excel file ",type=['xlsx'])  
-
+'''
+first check if the file is uploaded
+'''
 if data_file2:
     file_details2 = {
         "Filename":data_file2.name,
@@ -143,26 +150,31 @@ if data_file2:
 
     st.markdown(f"### Currently Selected: `{sheet_selector2}`")
     st.write(df2)
-    st.session_state.sheet=sheet_selector2
+    st.session_state.sheet=sheet_selector2.lower()
     print(st.session_state.sheet)
-    my_comment = '''
-    event = st.dataframe(
-        df2,
-        use_container_width=True,
-        hide_index=True,
-        on_select="rerun",
-        selection_mode="multi-row",
-        )
-        '''
-    st.write("Select an item to convert to SQL:")
+    
+    df2.columns = df2.columns.map(lambda x: x.lower().strip())
+    st.write(df2)
 
-    if sheet_selector2 =='CORE tables':
-        tables_df2 = dfutils.df_groupBy(df2, 'Table Name')
+    st.write("Select an item to convert to SQL:")
+    if sheet_selector2.lower() =='CORE tables'.lower(): #if sheet_selector2 =='CORE tables':
+        
+        tables_df2 = dfutils.df_groupBy(df2, 'table name')
         #st.write(tables_df2)
         selection = dataframe_with_selections(tables_df2)
         displayed_selection =selection.copy()
         displayed_selection['attr'] = displayed_selection['attr'].apply(lambda x: str(x))
-        
+    
+    elif sheet_selector2.lower()=='STG Tables'.lower(): 
+        st.header(f'sheet selector {sheet_selector2} , {sheet_selector2.lower()}')
+        #st.write(df2.columns)
+        #tables_df2 = dfutils.df_groupBy(df2, 'Table Name Source')
+        tables_df2 = dfutils.df_groupBy(df2, 'table name source')
+        tables_df2['attr'] = tables_df2['attr'].apply(lambda x: str(x))
+        selection = dataframe_with_selections(tables_df2)
+        displayed_selection =selection.copy()
+        #displayed_selection['attr'] = displayed_selection['attr'].apply(lambda x: str(x))
+
     else :
         selection = dataframe_with_selections(df2)
         displayed_selection =selection
@@ -176,7 +188,11 @@ if data_file2:
         check_difference(df, df2)
 
     if st.button('generate sql'):
-        rs = create_script(selection, st.session_state.sheet)
+        print(sheet_selector2)
+        print('================== type of selection =========', type(selection))
+        st.write(st.session_state.sheet)
+        st.write(f':green[Generate code for {selection.columns}]')
+        rs = create_script(selection, (st.session_state.sheet))
         st.session_state.sql_cmd = rs
         #selection['sql_script']=rs
         #st.dataframe(selection,column_config={'Table Name': 'Table',

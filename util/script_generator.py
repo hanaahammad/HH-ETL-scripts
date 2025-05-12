@@ -2,7 +2,7 @@ import pandas as pd
 import util.concat_util as cu
 from datetime import datetime
 
-
+import streamlit as st
 
 #the_file_to_read = "file_example_XLSX_5000.xlsx"
 #the_file_to_read = "WAVEZ_SMX_Version_0.1.xlsx"
@@ -109,27 +109,64 @@ def process_stream_tab(sheet_content):
         print(s)
     return generated_script 
 
+'''
+STG_tables functions takes a dataframe and returns the generates script
+'''
+def STG_tables_(sheet_content):
+    st.write(sheet_content)
+    #st.write(type(sheet_content))
+    st.write(sheet_content.columns)
+
+
 def STG_tables(sheet_content):
-    print("============= process stream tab ==============")
-    #print(type(sheet_content))
-    #print(sheet_content)
+    print("============= process STG tables tab ==============")
+    print(type(sheet_content))
     print(sheet_content.columns)
-    '''
-    ['System Id', 'System Name', 'Stream Key', 'Stream Name',
-       'Loading Frequency']
+    # ['table name source', 'attr'],
+    print(type(sheet_content['attr']))
+    attr_df=sheet_content['attr'].to_frame()
+    print(type(attr_df))
+    print(attr_df)
+    print(attr_df.columns)
+    print(attr_df.shape)
+    print(type(attr_df['attr']))
+    attrs=sheet_content['attr'].to_dict()
+    print(attrs)
+    
+    pref1 = "CREATE MULTISET TABLE GDEV1T_STG."
+    #table_name='sheet_content['attr']'
+    #table_name = sheet_content['table name stg']
+    pref2=', '
+    table_name=''
+    pref_fall_back = 'NO FALLBACK'
+    #if sheet_content['Fallback']=='Y':
+    #    pref_fall_back ='FALLBACK'
 
-    CALL GCFR_UT_Register_Stream(1,1,'CB_STG','2025-04-13');
+    pref3 = "NO BEFORE JOURNAL, NO AFTER JOURNAL, CHECKSUM = DEFAULT,DEFAULT MERGEBLOCKRATIO, MAP= TD_MAP1 ( "
+    pref=f'{pref1} {table_name} {pref2} {pref_fall_back} {pref3} '
+    
+    
+    sufx = """ BATCH_ID VARCHAR(20), Start_Ts TIMESTAMP(6) WITH TIME ZONE,
+    End_Ts TIMESTAMP(6) WITH TIME ZONE,     Start_Date DATE,     End_Date DATE,
+    Record_Deleted_Flag BYTEINT,
+    Ctl_Id SMALLINT COMPRESS 997,
+    File_Id SMALLINT COMPRESS 997,
+    Process_Name VARCHAR(128) CHARACTER SET LATIN NOT CASESPECIFIC,
+    Process_Id INTEGER,
+    Update_Process_Name VARCHAR(128) CHARACTER SET LATIN NOT CASESPECIFIC,
+    Update_Process_Id INTEGER)
+    UNIQUE PRIMARY INDEX """
+    print(sufx)
 
-       '''
-    pref = "CALL GCFR_UT_Register_Stream( "
-    sufx = ");"
     # next line will be removed when working with the actual sheet 
-    new_sheet_content =  pd.DataFrame(sheet_content[:4])
+    #new_sheet_content =  pd.DataFrame(sheet_content[:4])
 
+    
     
 
     generated_script = []
-    for indices, row in new_sheet_content.iterrows():
+    '''
+    for indices, row in sheet_content.iterrows():
         print(type(row))
         today = datetime.today().strftime('%Y-%m-%d')
         print(str(row))
@@ -137,8 +174,10 @@ def STG_tables(sheet_content):
         print(a)
         a =  a + cu.concat_2(row['Stream Name'], today )
         generated_script.append(pref+ a + sufx )
-
+    '''
+    s = f'{pref1} {table_name} {pref2} {pref_fall_back} {pref3} {sufx}'
     #print(new_sheet_content)
+    generated_script.append(s)
     print(generated_script)
     for s in generated_script:
         print(s)
@@ -198,8 +237,7 @@ print("======================== STREAM script generator ========== ")
 
 '''Core tables processing'''
 def core_tables_script(df):
-    print('------------------------------------- In core Tables script generator')
-    print("in core tables script function")
+    print(' In core Tables script generator')
     print(df)
     print(type(df))
     print(df.shape)
@@ -213,8 +251,8 @@ def core_tables_script(df):
     for index, row in df.iterrows():
         print('========================================== \n iterating the df')
         print(type(row))
-        print(row['Table Name'])
-        tbl_name=DB_name+'.'+row['Table Name']
+        print(row['table name'])
+        tbl_name=DB_name+'.'+row['table name']
         print('the table name is : ----- ',tbl_name)
         attr= row['attr']
         print('The attr col contains the following ', attr)
@@ -226,11 +264,11 @@ def core_tables_script(df):
         for f in attr:
             print (f)
             mand=''
-            if f['Mandatory']=='Y' :
+            if f['mandatory']=='Y' :
                 mand = "NOT NULL"
-            if f['Column Name'] == 'PARTY ID':
-                PARTY_ID = f['Column Name']
-            added_field = f['Column Name']+' '+f['Data Type']+' '+mand+','
+            if f['column name'] == 'PARTY ID':
+                PARTY_ID = f['column name']
+            added_field = f['column name']+' '+f['data type']+' '+mand+','
             print(added_field)
             f_string=f_string +' '+added_field
 
